@@ -17,3 +17,18 @@ hola:
   label: Hola
   permalink: /hola
   description: Hola tag description
+
+aws:
+  label: aws
+  permalink: /aws
+  description: AWS tag description
+
+github-pages:
+  label: github-pages
+  permalink: /github-pages
+  description: github-pages tag description
+
+blog:
+  label: blog
+  permalink: /blog
+  description: blog tag description
