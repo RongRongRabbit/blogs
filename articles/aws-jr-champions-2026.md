@@ -8,6 +8,7 @@ topics:
   - cloud
   - community
 published: true
+date: "2026-06-28"
 ---
 
 ## はじめに

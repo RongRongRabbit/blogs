@@ -21,7 +21,8 @@ for (const file of files) {
   const fm = match[1];
   const body = match[2].trimStart();
 
-  const title = fm.match(/title:\s*["']?(.+?)["']?$/m)?.[1] ?? file.replace(".md", "");
+  const title =
+    fm.match(/title:\s*["']?(.+?)["']?$/m)?.[1] ?? file.replace(".md", "");
 
   const topicsLine = fm.match(/topics:\s*\[(.*?)\]/m);
   const topics = topicsLine
@@ -33,6 +34,11 @@ for (const file of files) {
 
   const slug = file.replace(/\.md$/, "");
 
+  const dateMatch = fm.match(/date:\s*["']?(\d{4}-\d{2}-\d{2})["']?$/m);
+  const date = dateMatch ? dateMatch[1] : new Date().toISOString().slice(0, 10);
+
+  const outputFile = `${date}-${slug}.md`;
+
   const docusaurusFm = `---
 slug: ${slug}
 title: ${title}
@@ -43,6 +49,6 @@ ${topics.map((t) => `  - ${t}`).join("\n")}
 
 `;
 
-  fs.writeFileSync(path.join(docusaurusDir, file), docusaurusFm + body);
-  console.log(`Synced: ${file}`);
+  fs.writeFileSync(path.join(docusaurusDir, outputFile), docusaurusFm + body);
+  console.log(`Synced: ${file} -> ${outputFile}`);
 }
