@@ -32,3 +32,18 @@ blog:
   label: blog
   permalink: /blog
   description: blog tag description
+
+jrchampion:
+  label: jrchampion
+  permalink: /jrchampion
+  description: jrchampion tag description
+
+cloud:
+  label: cloud
+  permalink: /cloud
+  description: cloud tag description
+
+community:
+  label: community
+  permalink: /community
+  description: community tag description
