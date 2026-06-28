@@ -1,0 +1,34 @@
+name: Sync Zenn articles to Docusaurus
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "articles/**"
+      - "scripts/**"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run sync script
+        run: node scripts/sync-zenn-to-docusaurus.js
+
+      - name: Commit synced files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "sync zenn articles to docusaurus"
+          file_pattern: "site/blog/*.md site/blog/tags.yml"
