@@ -63,7 +63,7 @@ function readExistingTagKeys() {
   const raw = fs.readFileSync(tagsFile, "utf8");
   const keys = raw
     .split("\n")
-    .map((line) => line.match(/^([a-zA-Z0-9_-]+):\s*$/)?.[1])
+    .map((line) => line.match(/^([^:\s][^:]*):\s*$/)?.[1])
     .filter(Boolean);
 
   return new Set(keys);
