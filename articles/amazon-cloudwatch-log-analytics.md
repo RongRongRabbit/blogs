@@ -7,6 +7,7 @@ topics:
   - cloudwatch
   - loganalytics
   - monitoring
+  - ログ分析
 published: true
 date: "2026-07-06"
 ---
