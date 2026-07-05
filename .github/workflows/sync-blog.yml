@@ -31,4 +31,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "sync zenn articles to docusaurus"
-          file_pattern: "site/blog/*.md site/blog/tags.yml"
+          file_pattern: "site/blog/*.md site/blog/tags.yml site/static/images/**"

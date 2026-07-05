@@ -6,7 +6,22 @@ const zennDir = path.join(root, "articles");
 const docusaurusDir = path.join(root, "site", "blog");
 const tagsFile = path.join(docusaurusDir, "tags.yml");
 
+const sourceImagesDir = path.join(root, "images");
+const targetImagesDir = path.join(root, "site", "static", "images");
+
 fs.mkdirSync(docusaurusDir, { recursive: true });
+
+function copyImages() {
+  if (!fs.existsSync(sourceImagesDir)) {
+    console.log("No images directory found. Skip copying images.");
+    return;
+  }
+
+  fs.rmSync(targetImagesDir, { recursive: true, force: true });
+  fs.cpSync(sourceImagesDir, targetImagesDir, { recursive: true });
+
+  console.log("Copied images to site/static/images");
+}
 
 function parseTopics(fm) {
   const inlineMatch = fm.match(/topics:\s*\[(.*?)\]/m);
@@ -34,7 +49,10 @@ function parseTitle(fm, file) {
 }
 
 function parseDate(fm) {
-  return fm.match(/date:\s*["']?(\d{4}-\d{2}-\d{2})["']?$/m)?.[1] ?? new Date().toISOString().slice(0, 10);
+  return (
+    fm.match(/date:\s*["']?(\d{4}-\d{2}-\d{2})["']?$/m)?.[1] ??
+    new Date().toISOString().slice(0, 10)
+  );
 }
 
 function readExistingTagKeys() {
@@ -75,6 +93,13 @@ function appendMissingTags(allTopics) {
   console.log(`Added tags: ${missing.join(", ")}`);
 }
 
+function normalizeImagePaths(body) {
+  return body
+    .replace(/\]\(\.\/images\//g, "](/images/")
+    .replace(/\]\(\.\.\/images\//g, "](/images/")
+    .replace(/\]\(\/articles\/images\//g, "](/images/");
+}
+
 const files = fs.readdirSync(zennDir).filter((file) => file.endsWith(".md"));
 const allTopics = new Set();
 
@@ -88,7 +113,7 @@ for (const file of files) {
   }
 
   const fm = match[1];
-  const body = match[2].trimStart();
+  const body = normalizeImagePaths(match[2].trimStart());
 
   const title = parseTitle(fm, file);
   const topics = parseTopics(fm);
@@ -113,3 +138,4 @@ ${topics.map((t) => `  - ${t}`).join("\n")}
 }
 
 appendMissingTags(allTopics);
+copyImages();
