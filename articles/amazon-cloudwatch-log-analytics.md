@@ -20,8 +20,6 @@ AWSでは、新しいログ分析画面 **Amazon CloudWatch Log Analytics** の�
 
 本記事では、新しい Log Analytics の画面を見ながら、画面の変更点と便利な機能を紹介します。
 
----
-
 ## Log Analyticsとは？
 
 Log Analytics は、CloudWatch Logsを分析するための新しいインターフェースです。
@@ -30,7 +28,6 @@ CloudWatchに保存されたログを検索・分析し、障害調査や運用�
 
 従来のCloudWatch Logs Insightsの機能を引き継ぎながら、より直感的にログ分析を行えるようになっています。
 
----
 
 ## 新しい画面を見てみよう
 
@@ -40,7 +37,6 @@ CloudWatchに保存されたログを検索・分析し、障害調査や運用�
 
 また、右上には **ヘルプ** が追加され、初心者でも必要なクエリをすぐ利用できます。
 
----
 
 ## サンプルクエリを利用する
 
@@ -50,7 +46,6 @@ Log Analyticsでは、ヘルプ画面で用途に応じたサンプルクエリ�
 
 ![Help画面（サンプルクエリ）](/images/cloudwatch-log-analytics/help.png)
 
----
 
 ## クエリ履歴を利用する
 
@@ -60,7 +55,6 @@ Log Analyticsでは、ヘルプ画面で用途に応じたサンプルクエリ�
 
 障害調査で利用したクエリを毎回作り直す必要がなくなり、運用効率の向上につながります。
 
----
 
 ## Top N分析
 
@@ -89,7 +83,6 @@ Top Nでは、
 
 セキュリティ調査にも役立ちそうです。
 
----
 
 ## AIによるクエリ生成
 
@@ -101,7 +94,6 @@ Top Nでは、
 
 Logs Insightsのクエリ構文に慣れていない方でも、簡単にログ分析を始められます。
 
----
 
 ## リアルタイム分析
 
@@ -111,7 +103,6 @@ Log Analyticsでは、リアルタイムでイベントを確認できます。
 
 ![リアルタイム分析](/images/cloudwatch-log-analytics/realtime-analytics.png)
 
----
 
 ## 分析結果をエクスポートできる
 
@@ -119,7 +110,6 @@ Log Analyticsでは、リアルタイムでイベントを確認できます。
 
 ![分析結果のエクスポート](/images/cloudwatch-log-analytics/result-export.png)
 
----
 
 ## 従来画面へ戻すことも可能
 
@@ -128,7 +118,6 @@ Log Analyticsでは、リアルタイムでイベントを確認できます。
 
 ![旧画面へオプトアウト](/images/cloudwatch-log-analytics/back-to-old-home.png)
 
----
 
 ## 実際に触ってみた感想
 
@@ -138,7 +127,6 @@ Log Analyticsでは、リアルタイムでイベントを確認できます。
 
 CloudWatchを使い始めたばかりの方でも、ログ分析に触れるきっかけとして使いやすいUIになったと感じます。
 
----
 
 ## まとめ
 
@@ -155,9 +143,7 @@ CloudWatch Log Analyticsでは、ログ分析をより手軽に始められる�
 
 CloudWatch Logs Insightsに苦手意識があった方でも、新しいLog Analyticsを活用することで、これまでより手軽にログ分析を始められると感じました。
 
----
 
 ## 参考
 
-- Amazon CloudWatch Log Analytics
   https://aws.amazon.com/about-aws/whats-new/2026/06/amazon-cloudwatch-log-analytics/
