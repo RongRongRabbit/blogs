@@ -56,3 +56,23 @@ AWSSummitJapan:
   label: 生成AI
   permalink: /生成AI
   description: 生成AI tag description
+
+cloudwatch:
+  label: cloudwatch
+  permalink: /cloudwatch
+  description: cloudwatch tag description
+
+loganalytics:
+  label: loganalytics
+  permalink: /loganalytics
+  description: loganalytics tag description
+
+monitoring:
+  label: monitoring
+  permalink: /monitoring
+  description: monitoring tag description
+
+ログ分析:
+  label: ログ分析
+  permalink: /ログ分析
+  description: ログ分析 tag description
