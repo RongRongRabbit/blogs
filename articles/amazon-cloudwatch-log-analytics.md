@@ -7,8 +7,7 @@ topics:
   - cloudwatch
   - loganalytics
   - monitoring
-  - 初心者
-published: false
+published: true
 date: "2026-07-06"
 ---
 
