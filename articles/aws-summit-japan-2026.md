@@ -14,9 +14,9 @@ date: "2026-07-05"
 こんにちは、宋です。
 
 先日開催された **AWS Summit Japan 2026** に参加してきました。
-![AWS Summit Japan 2026 会場の様子](./images/aws-summit-japan-2026/会場の様子3.jpg)
-![AWS Summit Japan 2026 会場の様子](./images/aws-summit-japan-2026/会場の様子1.jpg)
-![AWS Summit Japan 2026 会場の様子](./images/aws-summit-japan-2026/会場の様子2.jpg)
+![AWS Summit Japan 2026 会場の様子](/articles/images/aws-summit-japan-2026/会場の様子3.jpg)
+![AWS Summit Japan 2026 会場の様子](/articles/images/aws-summit-japan-2026/会場の様子1.jpg)
+![AWS Summit Japan 2026 会場の様子](/articles/images/aws-summit-japan-2026/会場の様子2.jpg)
 
 今年は **2026 Japan AWS Jr. Champions** として参加する機会にも恵まれ、多くのセッションを聴講し、さまざまな方と交流することができました。
 
