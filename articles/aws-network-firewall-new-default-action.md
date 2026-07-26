@@ -1,5 +1,5 @@
 ---
-title: AWS Network Firewallの新しいデフォルトアクション「Application Drop Established」とは？
+title: AWS Network Firewallの新しいデフォルトアクション「確立されたアプリケーションドロップ（サーバー指向のみ）」とは？
 emoji: 🔥
 type: tech
 topics:
