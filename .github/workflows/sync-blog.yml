@@ -1,4 +1,4 @@
-name: Sync Zenn articles to Docusaurus
+name: Sync and Deploy GitHub Pages
 
 on:
   workflow_dispatch:
@@ -10,13 +10,20 @@ on:
       - "articles/**"
       - "images/**"
       - "scripts/**"
-      - ".github/workflows/sync-blog.yml"
+      - "site/**"
+      - ".github/workflows/deploy.yml"
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
 
 jobs:
-  sync:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,12 +36,40 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: npm
+          cache-dependency-path: site/package-lock.json
 
-      - name: Run sync script
+      - name: Sync Zenn articles to Docusaurus
         run: node scripts/sync-zenn-to-docusaurus.js
+
+      - name: Install dependencies
+        working-directory: site
+        run: npm ci
+
+      - name: Build Docusaurus
+        working-directory: site
+        run: npm run build
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/build
 
       - name: Commit synced files
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "sync zenn articles to docusaurus"
           file_pattern: "site/blog/*.md site/blog/tags.yml site/static/images/**"
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
