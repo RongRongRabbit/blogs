@@ -76,3 +76,18 @@ monitoring:
   label: ログ分析
   permalink: /ログ分析
   description: ログ分析 tag description
+
+networkfirewall:
+  label: networkfirewall
+  permalink: /networkfirewall
+  description: networkfirewall tag description
+
+security:
+  label: security
+  permalink: /security
+  description: security tag description
+
+firewall:
+  label: firewall
+  permalink: /firewall
+  description: firewall tag description
