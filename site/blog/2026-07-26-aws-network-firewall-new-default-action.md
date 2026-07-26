@@ -98,8 +98,8 @@ AWSマネジメントコンソールでは **「ステートフルルール評�
 | :--- | :---: | :---: | :---: |
 | **Default Action の適用方向** | Client ⇄ Server | Client ⇄ Server | **Client → Server のみ** |
 | **評価対象** | TCP セッション | アプリケーション層（双方向） | アプリケーション層（Client → Server） |
-| **Server → Client の TCP 制御パケット**<br>（Window Update / Keep-alive / RST など） | 通過 | Drop 対象となる場合あり | **通過** |
-| **Server → Client の正常な通信**<br>（サーバーバナー、レスポンスなど） | 通過 | Drop 対象となる場合あり | **通過** |
+| **Server → Client の TCP 制御パケット**（Window Update / Keep-alive / RST など） | 通過 | Drop 対象となる場合あり | **通過** |
+| **Server → Client の正常な通信**（サーバーバナー、レスポンスなど） | 通過 | Drop 対象となる場合あり | **通過** |
 | **特徴** | TCP セッション単位で評価 | 双方向のアプリケーション通信を評価 | Client → Server の通信のみを評価し、Server → Client の正常な通信を維持 |
 | **新規 Firewall Policy のデフォルト** | - | - | ◯ |
 
