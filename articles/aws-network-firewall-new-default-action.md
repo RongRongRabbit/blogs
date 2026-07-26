@@ -7,7 +7,7 @@ topics:
   - networkfirewall
   - security
   - firewall
-published: false
+published: true
 date: "2026-07-26"
 ---
 
