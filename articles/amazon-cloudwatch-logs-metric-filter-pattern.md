@@ -7,7 +7,7 @@ topics:
   - cloudwatch
   - monitoring
   - cloudwatchlogs
-published: false
+published: true
 date: "2026-08-02"
 
 ---
