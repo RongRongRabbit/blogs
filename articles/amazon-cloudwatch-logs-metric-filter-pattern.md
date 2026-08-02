@@ -1,5 +1,5 @@
 ---
-title: Amazon CloudWatch Logs メトリクスフィルターの Filter Pattern 実践ガイド｜JSON・Regex・HTTPログを検証
+title: Amazon CloudWatch Logs メトリクスフィルターの Filter Pattern 入門｜実際のログで検証してみた
 emoji: 🔍
 type: tech
 topics:
@@ -8,7 +8,8 @@ topics:
   - monitoring
   - cloudwatchlogs
 published: false
-date: "2026-07-31"
+date: "2026-08-02"
+
 ---
 こんにちは、宋です。
 
@@ -28,11 +29,9 @@ CloudWatch Logs のメトリクスフィルターでは、Filter Pattern を正�
 
 CloudWatch コンソールにはサンプルが用意されていますが、「どの Pattern を使えばよいのか」「Regex はどのように書くのか」と迷うことも少なくありません。
 
-![フィルターパターンの入力欄とサンプル](/images/cloudwatch-logs-metric-filter/sample-pattern.png)
+![フィルターパターンの入力欄とサンプル](/images/cloudwatch-logs-metric-filter-pattern/sample-pattern.png)
 
 そこで本記事では、代表的な Filter Pattern を実際のログを使って検証します。
-
----
 
 ## Filter Pattern の種類
 
@@ -70,8 +69,6 @@ JSON Pattern でも、次のように Regex を指定できます。
 3. JSON Pattern
 4. Regex
 
----
-
 ## 検証環境
 
 今回は、CloudWatch Logs メトリクスフィルターの作成画面にある **「パターンのテスト」** 機能を利用します。
@@ -82,7 +79,6 @@ JSON Pattern でも、次のように Regex を指定できます。
 - Filter Pattern をどのように記述するのか
 - どのログが条件に一致するのか
 
----
 
 ## 検証① Standalone Pattern
 
@@ -105,7 +101,7 @@ ERROR を含むログだけを検出する場合は、次のように記述し�
 ERROR
 ```
 
-### 検証結果
+**検証結果** は下表の通りです。
 
 |ログ|一致|
 |---|:---:|
@@ -116,7 +112,7 @@ ERROR
 
 期待どおり、ERROR を含むログだけが一致しました。
 
-![Standalone Pattern のテスト結果](/images/cloudwatch-logs-metric-filter/standalone-pattern.png)
+![Standalone Pattern のテスト結果](/images/cloudwatch-logs-metric-filter-pattern/standalone-pattern.png)
 
 Standalone Pattern は、アプリケーションログやシステムログから、ERROR、WARN、Exception などを検出する用途に適しています。
 
@@ -131,8 +127,6 @@ Standalone Pattern では、Regex も利用できます。
 単純な ERROR の検索では通常の文字列検索と大きな違いはありませんが、複数の文字列や一定の規則を持つ文字列を検索する場合に便利です。
 
 Regex の詳しい例は、後半で紹介します。
-
----
 
 ## 検証② Space-delimited Pattern
 
@@ -164,14 +158,14 @@ JSON Pattern のようにキー名を指定するのではなく、**各フィ�
 ip や status_code などのフィールド名は任意に指定できます。
 重要なのは、実際のログにおける各フィールドの順序と、Filter Pattern の定義順を一致させることです。
 
-### HTTP 4xx を検出する
+#### HTTP 4xx を検出する
 
 HTTP ステータスコードが 4xx のログだけを検出する場合は、次のように記述します。
 ```text
 [ip, identity, user, timestamp, request, status_code = 4*, size]
 ```
 
-### 検証結果
+**検証結果** は以下の通りです。
 
 |HTTP Status|一致|
 |---|:---:|
@@ -181,9 +175,9 @@ HTTP ステータスコードが 4xx のログだけを検出する場合は、�
 
 期待どおり、404 のログだけが一致しました。
 
-![HTTP 4xx のテスト結果](/images/cloudwatch-logs-metric-filter/space-delimited-pattern.png)
+![HTTP 4xx のテスト結果](/images/cloudwatch-logs-metric-filter-pattern/space-delimited-pattern.png)
 
-### ワイルドカードを利用する
+#### ワイルドカードを利用する
 
 評価しないフィールドは、`...` を使って省略できます。
 
@@ -209,8 +203,6 @@ Duplicate field '...'
 :::
 
 ただし、Space-delimited Pattern はログの構造に依存します。ログ形式やフィールドの順番が変更された場合は、Filter Pattern も見直す必要があります。
-
----
 
 ## 検証③ JSON Pattern
 
@@ -247,11 +239,9 @@ CloudTrail や Lambdaのログ など、多くの AWS サービスが JSON 形�
 { $.eventName = "CreateUser" }
 ```
 
-### 検証結果
+**検証結果** は「一致」です。
 
-✅ 一致
-
-![文字列の完全一致のテスト結果](/images/cloudwatch-logs-metric-filter/exact-match-pattern.png)
+![文字列の完全一致のテスト結果](/images/cloudwatch-logs-metric-filter-pattern/exact-match-pattern.png)
 
 CloudTrail の API 名など、特定の値を監視する場合に利用できます。
 
@@ -265,10 +255,9 @@ CloudTrail の API 名など、特定の値を監視する場合に利用でき�
 { $.userIdentity.userName = "alice" }
 ```
 
-### 検証結果
+**検証結果** は「一致」です。
 
-✅ 一致
-![ネストしたJSONのテスト結果](/images/cloudwatch-logs-metric-filter/nested-json-pattern.png)
+![ネストしたJSONのテスト結果](/images/cloudwatch-logs-metric-filter-pattern/nested-json-pattern.png)
 
 
 ### 複数条件を組み合わせる
@@ -285,10 +274,9 @@ CloudTrail の API 名など、特定の値を監視する場合に利用でき�
 
 この Pattern では、`CreateUser` API の実行時に AccessDenied が発生したイベントだけが一致します。
 
-### 検証結果
+**検証結果** は「一致」です。
 
-✅ 一致
-![複数条件を組み合わせるテスト結果](/images/cloudwatch-logs-metric-filter/multiple-conditions-pattern.png)
+![複数条件を組み合わせるテスト結果](/images/cloudwatch-logs-metric-filter-pattern/multiple-conditions-pattern.png)
 
 ### 存在・Null を判定する
 
@@ -299,7 +287,7 @@ JSON Pattern では、項目の存在や Null も判定できます。
 ```text
 { $.errorCode = * }
 ```
-![存在を判定するテスト結果](/images/cloudwatch-logs-metric-filter/field-existence-pattern.png)
+![存在を判定するテスト結果](/images/cloudwatch-logs-metric-filter-pattern/field-existence-pattern.png)
 
 
 `responseElements` が Null のイベントを検出する場合は、次のように記述します。
@@ -307,7 +295,7 @@ JSON Pattern では、項目の存在や Null も判定できます。
 ```text
 { $.responseElements IS NULL }
 ```
-![Nullを判定するテスト結果](/images/cloudwatch-logs-metric-filter/null-pattern.png)
+![Nullを判定するテスト結果](/images/cloudwatch-logs-metric-filter-pattern/null-pattern.png)
 
 
 キー自体が存在しないイベントは、次の Pattern で検出できます。
@@ -316,21 +304,19 @@ JSON Pattern では、項目の存在や Null も判定できます。
 { $.responseElements NOT EXISTS }
 ```
 
-![NotExistsを判定するテスト結果](/images/cloudwatch-logs-metric-filter/not-exists-pattern.png)
+![NotExistsを判定するテスト結果](/images/cloudwatch-logs-metric-filter-pattern/not-exists-pattern.png)
 
 `IS NULL` と `NOT EXISTS` は意味が異なります。
 
 - `IS NULL`：キーが存在し、値が Null
 - `NOT EXISTS`：キー自体が存在しない
 
----
-
-## JSON PatternでRegexを利用する
+### JSON PatternでRegexを利用する
 Regex は Standalone Pattern や JSON Pattern など、各 Pattern の条件として利用できます。
 
 Regex は `%...%` で囲みます。
 
-### 前方一致
+#### 前方一致
 
 例えば、`sourceIPAddress` が `192.168.12.` から始まるログを検索する場合は、次のように記述します。
 
@@ -341,26 +327,24 @@ Regex は `%...%` で囲みます。
 - `^`：文字列の先頭
 - `\.`：ドットを文字として扱う
 
-### 検証結果
+**検証結果** は「一致」です。
 
-✅ 一致
+![Regexを判定するテスト結果](/images/cloudwatch-logs-metric-filter-pattern/regex-pattern.png)
 
-![Regexを判定するテスト結果](/images/cloudwatch-logs-metric-filter/regex-pattern.png)
-
-### 否定条件
+#### 否定条件
 
 指定した Regex に一致しないログを検出する場合は、`!=` を利用します。
 
 ```text
 { $.sourceIPAddress != %^192\.168\.12\.% }
 ```
-![Regexを判定するテスト結果](/images/cloudwatch-logs-metric-filter/regex-exclusion-pattern.png)
+![Regexを判定するテスト結果](/images/cloudwatch-logs-metric-filter-pattern/regex-exclusion-pattern.png)
 
 この Pattern では、`192.168.12.` から始まらない IP アドレスが一致します。
 
 特定の送信元 IP アドレスを監視対象から除外する場合などに利用できます。
 
-### 複数のIPアドレスに一致させる
+#### 複数のIPアドレスに一致させる
 
 次の Pattern は、末尾が `120` または `121` の IP アドレスに一致します。
 
@@ -377,7 +361,7 @@ Regex は `%...%` で囲みます。
 
 - `[0-1]`：0または1
 - `$`：文字列の末尾
-![複数のIPアドレスに一致させるテスト結果](/images/cloudwatch-logs-metric-filter/regex-anchors-pattern.png)
+![複数のIPアドレスに一致させるテスト結果](/images/cloudwatch-logs-metric-filter-pattern/regex-anchors-pattern.png)
 
 ### Regex利用時の注意点
 
@@ -392,8 +376,6 @@ CloudWatch Logs で Regex を利用する場合は、次の点に注意が必要
 特に除外条件では、Pattern が想定より広い範囲に一致すると、監視対象となるログまで除外してしまう可能性があります。
 
 設定前に「パターンのテスト」を利用し、一致するログと一致しないログの両方を確認することが重要です。
-
----
 
 ## まとめ
 
@@ -419,13 +401,8 @@ Filter Pattern を作成する際は、構文だけでなく、**対象ログの
 
 ## 参考資料
 
+  https://docs.aws.amazon.com/ja_jp/AmazonCloudWatch/latest/logs/FilterAndPatternSyntaxForMetricFilters.html
 
-  https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html
-
-  https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/matching-terms-json-log-events.html
-
-  https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/matching-terms-unstructured-log-events.html
-
-  https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/matching-terms-space-delimited-log-events.html
+  https://docs.aws.amazon.com/ja_jp/AmazonCloudWatch/latest/logs/MonitoringPolicyExamples.html
 
   https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/MonitoringLogData.html
