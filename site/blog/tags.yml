@@ -91,3 +91,8 @@ firewall:
   label: firewall
   permalink: /firewall
   description: firewall tag description
+
+cloudwatchlogs:
+  label: cloudwatchlogs
+  permalink: /cloudwatchlogs
+  description: cloudwatchlogs tag description
