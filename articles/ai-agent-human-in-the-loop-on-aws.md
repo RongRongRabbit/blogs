@@ -8,11 +8,12 @@ topics:
   - strands
   - ai-agent
   - security
-published: false
+published: true
 date: "2026-08-30"
 ---
 
 ## はじめに
+こんにちは、宋です。
 
 最近、Strands Agents や Amazon Bedrock AgentCore を触る機会があり、AI Agent から AWS API を呼び出して運用を支援する仕組みを試していました。
 
@@ -788,7 +789,7 @@ Observability
 重要なのは、AI にどこまで任せるかではなく、**どこで責任を分けるか**を設計することです。
 
 
-# まとめ
+## まとめ
 
 今回の検証を始めたときは、「Write Tool の前に Human Approval を入れれば十分だろう」という程度に考えていました。
 
@@ -820,3 +821,13 @@ Agent の性能は今後さらに向上し、より多くの AWS 操作を自律
 その一方で、Human in the Loop、Tool 設計、IAM、Observability といった**責任を分離するための設計**は、今後も変わらず重要であり続けるはずです。
 
 今回の PoC が、AI Agent を AWS 運用へ組み込む際の一つの設計例として、参考になれば幸いです。
+
+## 参考資料
+
+https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/observability-get-started.html
+
+https://docs.aws.amazon.com/bedrock-agentcore/
+
+https://strandsagents.com/
+
+https://github.com/strands-agents
