@@ -96,3 +96,23 @@ cloudwatchlogs:
   label: cloudwatchlogs
   permalink: /cloudwatchlogs
   description: cloudwatchlogs tag description
+
+bedrock:
+  label: bedrock
+  permalink: /bedrock
+  description: bedrock tag description
+
+bedrock-agentcore:
+  label: bedrock-agentcore
+  permalink: /bedrock-agentcore
+  description: bedrock-agentcore tag description
+
+strands:
+  label: strands
+  permalink: /strands
+  description: strands tag description
+
+ai-agent:
+  label: ai-agent
+  permalink: /ai-agent
+  description: ai-agent tag description
