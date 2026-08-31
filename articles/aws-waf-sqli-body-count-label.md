@@ -7,7 +7,7 @@ topics:
   - waf
   - security
   - terraform
-published: false
+published: true
 date: "2026-08-31"
 ---
 
