@@ -116,3 +116,13 @@ ai-agent:
   label: ai-agent
   permalink: /ai-agent
   description: ai-agent tag description
+
+waf:
+  label: waf
+  permalink: /waf
+  description: waf tag description
+
+terraform:
+  label: terraform
+  permalink: /terraform
+  description: terraform tag description
