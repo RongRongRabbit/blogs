@@ -126,3 +126,23 @@ terraform:
   label: terraform
   permalink: /terraform
   description: terraform tag description
+
+stepfunctions:
+  label: stepfunctions
+  permalink: /stepfunctions
+  description: stepfunctions tag description
+
+ec2:
+  label: ec2
+  permalink: /ec2
+  description: ec2 tag description
+
+eventbridge:
+  label: eventbridge
+  permalink: /eventbridge
+  description: eventbridge tag description
+
+automation:
+  label: automation
+  permalink: /automation
+  description: automation tag description
