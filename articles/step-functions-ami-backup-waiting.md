@@ -8,7 +8,7 @@ topics:
   - ec2
   - eventbridge
   - automation
-published: false
+published: true
 date: "2026-09-06"
 ---
 
