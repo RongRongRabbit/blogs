@@ -146,3 +146,8 @@ automation:
   label: automation
   permalink: /automation
   description: automation tag description
+
+ami:
+  label: ami
+  permalink: /ami
+  description: ami tag description
