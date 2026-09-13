@@ -9,7 +9,7 @@ topics:
   - ami
   - automation
 published: true
-date: "2026-09-09"
+date: "2026-09-14"
 ---
 
 ## はじめに
