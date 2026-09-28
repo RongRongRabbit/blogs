@@ -151,3 +151,18 @@ ami:
   label: ami
   permalink: /ami
   description: ami tag description
+
+cloudformation:
+  label: cloudformation
+  permalink: /cloudformation
+  description: cloudformation tag description
+
+opa:
+  label: opa
+  permalink: /opa
+  description: opa tag description
+
+cicd:
+  label: cicd
+  permalink: /cicd
+  description: cicd tag description
