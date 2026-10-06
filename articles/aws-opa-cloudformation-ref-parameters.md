@@ -1,5 +1,5 @@
 ---
-title: Refだけでは足りない？OPAでCloudFormationの未確定値を事前検査する
+title: "!Refだけでは足りない？OPAでCloudFormationの未確定値を事前検査する"
 emoji: 🔍
 type: tech
 topics: 
@@ -15,7 +15,8 @@ date: "2026-10-06"
 
 ## はじめに
 
-[前回の記事](https://zenn.dev/takuyousou/articles/aws-opa-cloudformation-policy-as-code)では、OPAとConftestを利用してCloudFormationテンプレートを静的に検査し、Public SSH/RDPをデプロイ前に検出しました。
+前回の記事では、OPAとConftestを利用してCloudFormationテンプレートを静的に検査し、Public SSH/RDPをデプロイ前に検出しました。
+https://zenn.dev/takuyousou/articles/aws-opa-cloudformation-policy-as-code
 
 前回のPoCでは、ポート番号とCIDRをテンプレートへ直接記述していました。しかし、実際のCloudFormationでは、次のように値がデプロイ時に決まることがあります。
 
@@ -29,7 +30,7 @@ CidrIp: !Sub "${NetworkAddress}/${PrefixLength}"
 
 そこで本記事では、CloudFormationの値がどこで決まるかに応じて、検査方法を次の3つに分けます。
 
-- CI内で決定できる`!Ref`、`Fn::If`、一般的な`Fn::Sub`は、値を解決してからOPAで検査する
+- テンプレートとデプロイパラメータから事前に決定できる`!Ref`、`Fn::If`、一般的な`Fn::Sub`は、値を解決してからOPAで検査する
 - SSM Parameter StoreやSecrets Managerの動的参照は、無理に展開せず未解決として停止する
 - MacroやTransformは独自実装せず、CloudFormationが処理したテンプレートを検査する
 
@@ -42,7 +43,7 @@ CidrIp: !Sub "${NetworkAddress}/${PrefixLength}"
 :::message
 本記事の目的は、CloudFormationの評価処理をすべて再実装することではありません。
 
-CI内で安全に決定できる値だけを解決し、外部サービスやCloudFormation側の処理に依存する値は、別の方法で検査します。
+テンプレートとデプロイパラメータから事前に決定できる値だけを解決し、外部サービスやCloudFormation側の処理に依存する値は、別の方法で検査します。
 :::
 
 ## 本記事の対象者
@@ -112,9 +113,9 @@ Resources:
 
 | 記述 | 値の取得元 | 本記事での扱い |
 | --- | --- | --- |
-| `!Ref` | Parametersの指定値またはDefault | CI内で解決 |
-| `Fn::If` | Conditionsの評価結果 | CI内で解決 |
-| `Fn::Sub` | Parametersまたは明示的な変数マップ | CI内で解決 |
+| `!Ref` | Parametersの指定値またはDefault | デプロイ前に解決 |
+| `Fn::If` | Conditionsの評価結果 | デプロイ前に解決 |
+| `Fn::Sub` | Parametersまたは明示的な変数マップ | デプロイ前に解決 |
 | 動的参照 | SSM Parameter Store、Secrets Manager | 未解決なら停止 |
 | Macro / Transform | CloudFormation、Lambda | CloudFormationで展開後に検査 |
 | リソースの`Ref`、`Fn::GetAtt` | 作成されるAWSリソース | 今回のローカル解決対象外 |
@@ -202,7 +203,7 @@ OPAポリシーは、前回作成したルールのうち、`AWS::EC2::SecurityG
 検査後にコンソールなどから別の値を入力すると、検査した構成と実際にデプロイされる構成が一致しません。
 :::
 
-## CI内で値を解決する
+## デプロイ前に値を解決する
 
 前処理スクリプトでは、パラメータ値を次の優先順位で決定します。
 
@@ -262,7 +263,7 @@ CidrIp: 0.0.0.0/0
 python3 scripts/resolve_parameters.py \
   --template templates/parameterized-security-group.yaml \
   --parameters parameters/unsafe-ssh.json \
-  --output build/unsafe.json
+  --output build/unsafe-ssh.json
 ```
 
 解決後のSecurity Groupは次のようになります。
@@ -292,13 +293,13 @@ python3 scripts/resolve_parameters.py \
 解決後のテンプレートをConftestで検査します。
 
 ```bash
-conftest test build/unsafe.json --policy policy
+conftest test build/unsafe-ssh.json --policy policy
 ```
 
 Public SSHが検出され、Conftestはexit code 1を返します。
 
 ```text
-FAIL - build/unsafe.json - main - ParameterizedSecurityGroup allows SSH (22) from the public internet
+FAIL - build/unsafe-ssh.json - main - ParameterizedSecurityGroup allows SSH (22) from the public internet
 
 2 tests, 1 passed, 0 warnings, 1 failure, 0 exceptions
 ```
@@ -315,9 +316,9 @@ FAIL - build/unsafe.json - main - ParameterizedSecurityGroup allows SSH (22) fro
 python3 scripts/resolve_parameters.py \
   --template templates/parameterized-security-group.yaml \
   --parameters parameters/safe-https.json \
-  --output build/safe.json
+  --output build/safe-https.json
 
-conftest test build/safe.json --policy policy
+conftest test build/safe-https.json --policy policy
 ```
 
 `ManagementPort`には22を指定していますが、`Fn::If`によって443が選択されます。
@@ -479,18 +480,18 @@ OPAだけですべてを判断するのではなく、各段階の役割を分�
 
 CloudFormationには多くのIntrinsic Functionsがあり、独自スクリプトですべてを再現するのは現実的ではありません。
 
-重要なのは、対応していない式を黙って無視することではなく、「CI内で決定できる値」「AWS環境で決まる値」「デプロイ後にしか確認できない状態」を区別し、それぞれに適した検査を配置することです。
+重要なのは、対応していない式を黙って無視することではなく、「テンプレートとデプロイパラメータから事前に決定できる値」「AWS環境で決まる値」「デプロイ後にしか確認できない状態」を区別し、それぞれに適した検査を配置することです。
 
 本記事が、CloudFormationの実際の入力値まで含めたPolicy as Codeを設計する際の参考になれば幸いです。
 
 ## 参考資料
 
-- [CloudFormationテンプレートのParameters構文](https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html)
-- [Ref - AWS CloudFormation](https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/TemplateReference/intrinsic-function-reference-ref.html)
-- [条件関数 - AWS CloudFormation](https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/TemplateReference/intrinsic-function-reference-conditions.html)
-- [Fn::Sub - AWS CloudFormation](https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/TemplateReference/intrinsic-function-reference-sub.html)
-- [動的参照を使用して他のサービスに格納されている値を取得する](https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/dynamic-references.html)
-- [CloudFormationマクロの概要](https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/template-macros-overview.html)
-- [GetTemplate - AWS CloudFormation API Reference](https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/APIReference/API_GetTemplate.html)
-- [Open Policy Agent公式ドキュメント（英語）](https://www.openpolicyagent.org/docs/)
-- [Conftest公式ドキュメント（英語）](https://www.conftest.dev/)
+https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html
+https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/TemplateReference/intrinsic-function-reference-ref.html
+https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/TemplateReference/intrinsic-function-reference-conditions.html
+https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/TemplateReference/intrinsic-function-reference-sub.html
+https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/dynamic-references.html
+https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/template-macros-overview.html
+https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/APIReference/API_GetTemplate.html
+https://www.openpolicyagent.org/docs/
+https://www.conftest.dev/
