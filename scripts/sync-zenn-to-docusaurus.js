@@ -125,7 +125,7 @@ for (const file of files) {
 
   const docusaurusFm = `---
 slug: ${slug}
-title: ${title}
+title: ${JSON.stringify(title)}
 authors: [song]
 tags:
 ${topics.map((t) => `  - ${t}`).join("\n")}
