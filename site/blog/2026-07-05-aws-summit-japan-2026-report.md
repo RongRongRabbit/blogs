@@ -1,6 +1,6 @@
 ---
 slug: aws-summit-japan-2026-report
-title: AWS Summit Japan 2026で見えた生成AIの現在地 〜「使う」から「一緒に働く」時代へ〜
+title: "AWS Summit Japan 2026で見えた生成AIの現在地 〜「使う」から「一緒に働く」時代へ〜"
 authors: [song]
 tags:
   - aws

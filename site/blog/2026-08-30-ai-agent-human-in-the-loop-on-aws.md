@@ -1,6 +1,6 @@
 ---
 slug: ai-agent-human-in-the-loop-on-aws
-title: AI AgentにAWS操作をどこまで任せる？ ーHuman in the Loopで考える「責任範囲」の設計ー
+title: "AI AgentにAWS操作をどこまで任せる？ ーHuman in the Loopで考える「責任範囲」の設計ー"
 authors: [song]
 tags:
   - bedrock

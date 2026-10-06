@@ -1,6 +1,6 @@
 ---
 slug: aws-opa-cloudformation-policy-as-code
-title: 危険なSecurity Groupをデプロイ前に止める！OPAでCloudFormationを事前検査する
+title: "危険なSecurity Groupをデプロイ前に止める！OPAでCloudFormationを事前検査する"
 authors: [song]
 tags:
   - aws

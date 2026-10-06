@@ -1,6 +1,6 @@
 ---
 slug: aws-jr-champions-2026
-title: 2026 Japan AWS Jr. Champions に選出されるまでに取り組んだこと
+title: "2026 Japan AWS Jr. Champions に選出されるまでに取り組んだこと"
 authors: [song]
 tags:
   - aws

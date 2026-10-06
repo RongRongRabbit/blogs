@@ -1,6 +1,6 @@
 ---
 slug: step-functions-ami-backup-waiting
-title: Step FunctionsでEC2バックアップ｜AMIがavailableになるまで本当に待つ必要がある？
+title: "Step FunctionsでEC2バックアップ｜AMIがavailableになるまで本当に待つ必要がある？"
 authors: [song]
 tags:
   - aws

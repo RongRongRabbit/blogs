@@ -1,6 +1,6 @@
 ---
 slug: amazon-cloudwatch-logs-metric-filter-pattern
-title: Amazon CloudWatch Logs メトリクスフィルターの Filter Pattern 入門｜実際のログで検証してみた
+title: "Amazon CloudWatch Logs メトリクスフィルターの Filter Pattern 入門｜実際のログで検証してみた"
 authors: [song]
 tags:
   - aws

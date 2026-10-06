@@ -1,6 +1,6 @@
 ---
 slug: amazon-cloudwatch-log-analytics
-title: Amazon CloudWatchの新機能「Log Analytics」を触ってみた
+title: "Amazon CloudWatchの新機能「Log Analytics」を触ってみた"
 authors: [song]
 tags:
   - aws

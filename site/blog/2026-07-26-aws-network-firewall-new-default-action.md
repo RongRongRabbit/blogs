@@ -1,6 +1,6 @@
 ---
 slug: aws-network-firewall-new-default-action
-title: AWS Network Firewallの新しいデフォルトアクション「確立されたアプリケーションドロップ（サーバー指向のみ）」とは？
+title: "AWS Network Firewallの新しいデフォルトアクション「確立されたアプリケーションドロップ（サーバー指向のみ）」とは？"
 authors: [song]
 tags:
   - aws

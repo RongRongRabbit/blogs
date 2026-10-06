@@ -1,6 +1,6 @@
 ---
 slug: step-functions-ec2-backup-ami-name
-title: Lambda不要！Step FunctionsでEC2バックアップ｜UTC・JST日時付きのAMI名を生成する
+title: "Lambda不要！Step FunctionsでEC2バックアップ｜UTC・JST日時付きのAMI名を生成する"
 authors: [song]
 tags:
   - aws

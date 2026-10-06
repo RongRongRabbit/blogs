@@ -1,6 +1,6 @@
 ---
 slug: aws-waf-sqli-body-count-label
-title: AWS WAFのSQLi_BODYだけを制御する｜Managed RuleのCount + Labelを使った誤検知対策
+title: "AWS WAFのSQLi_BODYだけを制御する｜Managed RuleのCount + Labelを使った誤検知対策"
 authors: [song]
 tags:
   - aws
