@@ -166,3 +166,18 @@ cicd:
   label: cicd
   permalink: /cicd
   description: cicd tag description
+
+awswaf:
+  label: awswaf
+  permalink: /awswaf
+  description: awswaf tag description
+
+生成ai:
+  label: 生成ai
+  permalink: /生成ai
+  description: 生成ai tag description
+
+検証:
+  label: 検証
+  permalink: /検証
+  description: 検証 tag description
