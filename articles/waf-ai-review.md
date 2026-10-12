@@ -8,7 +8,7 @@ topics:
   - awswaf
   - 生成ai
   - 検証
-published: false
+published: true
 date: "2026-10-12"
 ---
 
