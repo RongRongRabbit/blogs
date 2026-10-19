@@ -12,12 +12,11 @@ published: false
 date: "2026-10-12"
 ---
 
-
 ## はじめに
 
 CloudWatch Logsでエラーを検知したいとき、これまではMetric Filterでログをメトリクスに変換し、Metric Alarmで監視する構成をよく使っていました。
 
-そんな中、2026年7月に**Log Alarm**が東京リージョンに登場しました。Logs Insightsのクエリ結果を使って、そのままアラームを作れる機能です。
+2026年7月に、Logs Insightsのクエリ結果からアラームを作成できる**Log Alarm**が登場しました。今回は東京リージョンで検証します。
 
 気になったのは、**Metric Filter + Metric Alarmと比べて、設定や運用がどう変わるのか**という点です。
 
@@ -56,11 +55,9 @@ Log Alarmを作成すると、CloudWatchが**AWS管理のScheduled Query**を自
 
 以下では、同じログと閾値を使って両方式を比較します。
 
-## 検証環境
+## 検証環境と設定
 
-今回は実際のEC2やバッチ基盤を作らず、CloudWatch LogsにJSON形式のテストログを投入します。
-
-検証①の再現用CLIとログ投入コードは、記事末尾の付録に掲載しています。
+今回は実際のEC2やバッチ基盤を作らず、CloudWatch LogsにJSON形式のテストログを投入しました。
 
 | 項目 | 内容 |
 |---|---|
@@ -70,8 +67,7 @@ Log Alarmを作成すると、CloudWatchが**AWS管理のScheduled Query**を自
 | 比較するもの | Metric Filter + Metric Alarm / Log Alarm |
 | 通知 | 最初は設定せず、状態と履歴を確認 |
 
-
-## エラー監視の設定値
+### エラー監視の設定値
 
 検証①では、**「5分間でERRORが10件を超えたら検知」** を共通の監視要件とします。ただし、2つの方式は評価の仕組みが異なるため、設定値をそろえても評価タイミングまで同じになるわけではありません。
 
@@ -85,7 +81,7 @@ Log Alarmを作成すると、CloudWatchが**AWS管理のScheduled Query**を自
 | 評価条件 | `EvaluationPeriods=1` / `DatapointsToAlarm=1` | `QueryResultsToEvaluate=1` / `QueryResultsToAlarm=1` | 1回の閾値超過でALARMになるようにする |
 | データ欠損 | `notBreaching` | `notBreaching` | ERRORが出ない場合は正常扱い。ただしログ停止は検知できない |
 
-Metric Alarmは**メトリクスのデータポイント**、Log Alarmは**各回のクエリの集計結果**を使って判定します。今回は、評価する数とALARMに必要な超過数をどちらも`1`に設定します。
+Metric Alarmは**メトリクスのデータポイント**、Log Alarmは**各回のクエリの集計結果**を使って判定します。今回は、1回の評価で閾値を超えたらALARMになる設定です。
 
 ### Log Alarmの実行間隔と検索範囲
 
@@ -117,7 +113,6 @@ Log Alarmでは、**何分ごとに実行するか**と、**いつのログを�
 
 次の形式のJSONログを投入します。以下はログ形式の例であり、実際には後述の表にある件数分を投入します。
 
-
 ```json
 {"eventType":"application","instanceId":"i-demo-001","level":"ERROR","message":"Connection timeout"}
 {"eventType":"application","instanceId":"i-demo-002","level":"ERROR","message":"Database unavailable"}
@@ -134,10 +129,9 @@ Log Alarmでは、**何分ごとに実行するか**と、**いつのログを�
 
 ステップ1で投入したログをLogs Insightsで集計し、3台分のERROR件数を確認しました。
 
-![投入したテストログ](/images/log-alarm-vs-metric-filter-alarm/02-sample-logs.png)
+![ステップ1：インスタンス別のERROR件数](/images/log-alarm-vs-metric-filter-alarm/02-sample-logs.png)
 
 ステップ2は、**監視設定を変更せずに、新しいインスタンスを検知できるか**を確認するためのものです。
-
 
 ### Log Alarmで設定する
 
@@ -155,9 +149,11 @@ count(*) by instanceId
 ```
 
 `by`句を使うと、`instanceId`の値ごとに**Contributor**として独立に評価され、どれか1つでも閾値を超えるとアラームがALARMになります。
+
 ![Log Alarmのクエリと集計式](/images/log-alarm-vs-metric-filter-alarm/03-query-settings-detail.png)
 
 閾値・実行間隔・Offsetは、前述の設定値の表に沿って設定します。
+
 ![Log Alarmの閾値と時間設定](/images/log-alarm-vs-metric-filter-alarm/04-threshold-schedule.png)
 
 ### Metric Filter + Metric Alarmで設定する
@@ -180,16 +176,15 @@ count(*) by instanceId
 
 また、Dimensionを指定したMetric Filterでは、ERRORがない時間帯にデータが出ません。今回は`TreatMissingData=notBreaching`を指定し、データがない場合は正常として扱います。
 
-### 検証結果：既存のインスタンスを検知できたか
-
+### 検証結果
+**① 既存のインスタンスを検知できたか**
 Logs Insightsでログを手動集計すると、`i-demo-001`は2件、`i-demo-002`は15件、`i-demo-003`は1件でした。アラーム画面でも同じ値が表示され、**10件を超えた`i-demo-002`を両方式で検知できました。**
 
 ![i-demo-002を両方式で検知した結果](/images/log-alarm-vs-metric-filter-alarm/06-contributor-result.png)
 
 Metric Alarmは`i-demo-002`だけがALARMとなり、残り2台はOKでした。Log AlarmもALARMとなり、Contributor欄に`instanceId = i-demo-002`が表示されています。
 
-### 検証結果：新しいインスタンスを検知できたか
-
+**② 新しいインスタンスを検知できたか**
 次に、監視設定を変更せず、`i-demo-004`のERRORを15件投入しました。**Log Alarmでは新しいContributorとして認識され、ALARMになりました。**
 
 ![新しいインスタンスを検知したLog Alarm](/images/log-alarm-vs-metric-filter-alarm/11-new-contributor.png)
@@ -262,9 +257,9 @@ Aggregation Expressionは1つのアラームに1つしか指定できないた�
 
 `$.durationMs = *`で、`durationMs`が存在するログを対象にします。テストログでは、このフィールドに数値を入れています。Metric Valueに`$.durationMs`、Dimensionに`Job=$.job`を指定し、Metric Alarmの統計を`Average`または`Maximum`にします。
 
-![最大処理時間を監視するLog Alarmの設定](/images/log-alarm-vs-metric-filter-alarm/08-batch-metric-filter.png)
+![Metric Filterの処理時間抽出設定](/images/log-alarm-vs-metric-filter-alarm/08-batch-metric-filter.png)
 
-### 検証結果と、まだ確認できていないこと
+### 検証結果
 
 Metric AlarmのCLI出力では、次の状態を確認できました。
 
@@ -305,55 +300,27 @@ Metric FilterのDimensionは、値の組み合わせごとに別のメトリク�
 
 ## 運用前に確認すること
 
-Log Alarmの検証では、クエリの内容だけでなく、**いつのログを、どの単位で評価しているか**を確認する必要があります。
+今回の検証に加えて、運用前には次の点も確認する必要があります。
 
-### クエリ・実行間隔・権限
+- Log Alarmでは、ログが届くまでの遅れを考えて検索範囲を決めます。今回は直近2分を外しましたが、この値は実際の取り込み状況に合わせて調整する必要があります。クエリの実行間隔も、次の実行までに処理が終わるように設定します。
 
-- **Log Groupの選択**：本番の大容量ログを誤って対象にしない。スキャン料金にも影響する。
-- **QueryとAggregation Expression**：ログの抽出条件と集計式を分けて設定する。`instanceId`や`durationMs`が実際のログに存在するか、事前にLogs Insightsで手動実行して確認する。
-- **ScheduleExpression / Offset**：何分ごとに、どの時間帯のログを検索するか。大容量のLog Groupでは、次の実行までにクエリが終わる間隔を選ぶ。
-- **IAM Role**：Scheduled Queryの実行ロールに`logs:StartQuery`、`logs:StopQuery`、`logs:GetQueryResults`、`logs:DescribeLogGroups`が必要。権限が足りないと`INSUFFICIENT_DATA`のままになる。初回はConsoleの作成フローを利用する。
-- **Missing Data**：`count(*)`は該当ログが0件でも`0`を返すため、欠損データにはならない。エラー0件とログ収集停止は別問題なので、正常ログが途絶える障害は別の監視を検討する。
+- `by instanceId`の集計結果からインスタンスが消えると、そのContributorは欠損データの設定に関係なくOKに戻ります。ログが出ていないからといって正常とは限らないため、ログ収集の停止は別の方法で監視します。
 
-### Contributorの上限と状態変化
+- 監視対象が多い場合は、Contributorの上限にも注意が必要です。[公式ドキュメント](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/alarm-log.html)によると、2026年10月時点では、1回のクエリで返されるのは最大500件、同時にALARM状態として追跡されるのは最大100件です。今回は、この上限に達するケースは試していません。
 
-- **消えたContributorはOKに戻る**：クエリ結果に現れなくなったContributor（停止したインスタンスなど）は、`TreatMissingData`の設定に関係なくOKになる。「ログが出なくなったインスタンス」をこの仕組みで検知することはできない。
-- **上限**：`by`句のフィールドは最大5個、1回のクエリで返るContributorは最大500件、同時にALARM状態として追跡されるContributorは最大100件。500件を超えると評価状態が`PARTIAL_DATA`になる。
-- **通知の単位**：SNSやLambdaのアクションは、閾値を超えたContributorごとに1回ずつ実行される。通知には`AlarmContributorAttributes`として`instanceId`の値が含まれる。
+- Metric Filterでは、Dimensionに指定する値の組み合わせが増えるほどメトリクス数も増えます。今回はインスタンスIDを使いましたが、リクエストIDのように毎回変わる値を指定すると、メトリクス数が増え、料金も高くなります。
 
-### アカウント全体の制約
+## おわりに
 
-- **同時実行数**：アカウント内のScheduled Queryの同時実行は最大100。Log Alarmを大量に作る場合は、実行スケジュールが重ならないように分散させる。
-- **設定変更時のリセット**：クエリ、集計式、スケジュール、Log Groupを変更すると、アラームは`INSUFFICIENT_DATA`に戻る。閾値やM out of Nの変更ではリセットされない。
+今回は、同じログを使ってLog AlarmとMetric Filter + Metric Alarmを比較しました。Log Alarmでは、新しいインスタンスを追加しても、設定を変えずに閾値超過を検知できました。
 
-### 通知にログ行を含める
+ログから作ったメトリクスを継続して使いたいか、ログの集計結果を直接監視したいかによって、選び方も変わりそうです。
 
-`ActionLogLineCount`（1〜50）を設定すると、SNSのメール通知に集計対象の元ログ行を含められます。通知を受けた時点で原因のログを確認できるのは、Metric Filter方式にはない利点です。ただし、ログ内の機密情報が通知メールに載る可能性があるため、有効にする前にログの内容を確認します。
-
-### Metric Filter側の注意点
-
-- **Dimensionの値の種類**：リクエストIDのように値の種類が多いフィールドをDimensionにすると、メトリクス数と料金が急増する。
-- **過去ログは対象外**：Metric Filterは作成後に取り込まれたログだけをメトリクスに変換する。
-
-特にログ取り込み遅延がある環境では、クエリ実行直前のログを見ようとすると取りこぼす可能性があります。今回はログ投入時刻とアラーム状態の変化を記録し、**検知の早さを印象だけで比較しない**ようにします。
-
-## まとめ：監視対象を追加するときの違い
-
-EC2のエラー監視では、両方式とも`i-demo-002`の閾値超過を検知できました。違いが出たのは、新しいインスタンスを追加したときです。
-
-- **Metric Filter + Metric Alarm**：`i-demo-004`のメトリクスは自動で生成されましたが、今回の構成では対応するアラームの追加が必要です。
-- **Log Alarm**：1つのアラームでインスタンス別に集計し、設定を変更せずに`i-demo-004`の閾値超過を検知できました。
-
-そのため、今回のように**増減するインスタンスを同じ条件で監視したい場合**は、Log Alarmが選択肢になります。一方、ログから作った指標をダッシュボードや複数のアラームで使いたい場合は、Metric Filterでメトリクスとして保存する構成も役立ちます。
-
-バッチ監視では、Metric Alarmによる閾値超過と、Log Alarmの平均・最大の設定まで確認できました。Log Alarmの判定結果や、欠損扱いでOKになったMetric Alarmの集計値は、追加確認が必要です。
-
-今回の検証で確認できたのは、主にエラーの検知結果と監視対象の追加時の動作です。通知、検知までの所要時間、料金も含めた比較は、今後の確認事項とします。
-
+CloudWatch Logsを使った監視を検討する際に、この記事がご参考になれば幸いです。
 
 ## 参考資料
 
 https://aws.amazon.com/jp/cloudwatch/pricing/
-https://docs.aws.amazon.com/jp/AmazonCloudWatch/latest/monitoring/alarm-log.html
-https://docs.aws.amazon.com/jp/AmazonCloudWatch/latest/logs/MonitoringLogData.html
-https://docs.aws.amazon.com/jp/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html
+https://docs.aws.amazon.com/ja_jp/AmazonCloudWatch/latest/monitoring/alarm-log.html
+https://docs.aws.amazon.com/ja_jp/AmazonCloudWatch/latest/logs/MonitoringLogData.html
+https://docs.aws.amazon.com/ja_jp/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html
