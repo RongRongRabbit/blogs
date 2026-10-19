@@ -8,7 +8,7 @@ topics:
   - monitoring
   - logs
   - alarm
-published: false
+published: true
 date: "2026-10-12"
 ---
 
