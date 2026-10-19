@@ -181,3 +181,13 @@ awswaf:
   label: 検証
   permalink: /検証
   description: 検証 tag description
+
+logs:
+  label: logs
+  permalink: /logs
+  description: logs tag description
+
+alarm:
+  label: alarm
+  permalink: /alarm
+  description: alarm tag description
