@@ -1,5 +1,5 @@
 ---
-title: "Log Alarm登場で何が変わった？Metric Filterとの違いを検証する"
+title: "CloudWatch Log AlarmとMetric Filter + Metric Alarmを比較してみた"
 emoji: "🔎"
 type: "tech"
 topics:
