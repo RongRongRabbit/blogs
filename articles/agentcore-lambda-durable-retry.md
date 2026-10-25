@@ -8,7 +8,7 @@ topics:
   - bedrock
   - agentcore
   - serverless
-published: false
+published: true
 date: "2026-10-25"
 ---
 
