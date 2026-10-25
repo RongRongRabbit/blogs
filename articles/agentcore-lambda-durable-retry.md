@@ -279,8 +279,8 @@ Agentの処理が長くなったり、Toolが増えたりするほど、**Checkp
 
 ### 参考資料
 
-- https://docs.aws.amazon.com/ja_jp/lambda/latest/dg/durable-functions.html
-- https://docs.aws.amazon.com/ja_jp/lambda/latest/dg/durable-execution-sdk-retries.html
-- https://docs.aws.amazon.com/ja_jp/lambda/latest/dg/concepts-application-design.html
-- https://docs.aws.amazon.com/ja_jp/service-authorization/latest/reference/list_amazonbedrockagentcore.html
+https://docs.aws.amazon.com/ja_jp/lambda/latest/dg/durable-functions.html
+https://docs.aws.amazon.com/ja_jp/lambda/latest/dg/durable-execution-sdk-retries.html
+https://docs.aws.amazon.com/ja_jp/lambda/latest/dg/concepts-application-design.html
+https://docs.aws.amazon.com/ja_jp/service-authorization/latest/reference/list_amazonbedrockagentcore.html
 
