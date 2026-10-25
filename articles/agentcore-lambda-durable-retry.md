@@ -2,41 +2,72 @@
 title: "AI Agentの処理は成功したのに、また実行？AgentCore × Lambda Durable Functionsで再実行を検証する"
 emoji: "🔁"
 type: "tech"
-topics: ["aws", "lambda", "bedrock", "agentcore", "serverless"]
+topics:
+  - aws
+  - lambda
+  - bedrock
+  - agentcore
+  - serverless
 published: false
+date: "2026-10-25"
 ---
 
 ## はじめに
-
-AI Agentに設定情報を調べてもらい、結果をS3に保存する。そんな処理を作っていると、少し気になることがあります。
+AI Agentに設定情報を調べてもらい、その結果をS3に保存する。そんな処理を作っていると、少し気になることがあります。
 
 **Agentの分析は終わっているのに、その後のS3保存だけ失敗したらどうなるんだろう？**
 
-単純に最初からやり直す実装だと、分析ももう一度行うことになります。普通の処理ならそれでもよいかもしれませんが、Agentの場合はモデルを再度呼び出し、内部のToolも実行される可能性があります。時間や料金だけでなく、Toolが更新処理だった場合には、重複実行も気になるところです。
+処理を最初からやり直すと、Agentの分析も再実行されます。Agentの場合、モデルだけでなく内部のToolも再度呼び出される可能性があり、処理時間や料金、更新処理の重複が気になるところです。
 
-そこで今回は、**Amazon Bedrock AgentCore Runtime**で動かすAI Agentを、通常のAWS Lambdaと**Lambda Durable Functions**から呼び出し、S3保存前に意図的なエラーを起こして挙動を比べてみました。
+そこで今回は、**Amazon Bedrock AgentCore Runtime × AWS Lambda Durable Functions**を使い、S3保存に失敗した場合の再実行動作を、通常のLambdaと比較してみました。
 
-結論を先に書くと、今回の条件では、通常Lambdaの全体リトライではAgentCoreを2回呼び出したのに対し、Durable Functionsでは完了済みのAgent Stepを再実行せず、S3保存Stepだけを再試行できました。ただし、これは **「Durableなら必ず一度しか実行されない」** という意味ではありません。その違いも含めて確認します。
+今回の検証では、通常のLambdaはAgentCoreを2回呼び出したのに対し、Durable Functionsでは完了済みのAgent処理を再実行せず、S3保存だけを再試行できました。
 
-## 今回試したいこと
+ただし、Durable Functionsですべての重複実行を防げるわけではありません。その仕組みと適用範囲も確認します。
 
-処理は次の3段階です。
+## 本記事の対象者
 
-```text
-Lambda
-  ├─ AgentCore Runtimeを呼び出す
-  │    └─ Strands Agent → ToolでEC2の模擬設定を取得 → Nova Liteで分析
-  └─ 分析結果をS3に保存する
-```
+- LambdaからAI Agentを呼び出す処理を作っている方
+- AgentやToolの重複実行が気になっている方
+- Lambda Durable FunctionsのStepとCheckpointを理解したい方
 
-S3への保存処理は、初回だけ**PutObjectの直前**に例外を発生させます。実際のS3障害ではなく、コードによる失敗注入です。
+## 今回の検証構成
 
-比較するのは次の2方式です。
+今回は、LambdaからAgentCore Runtime上のStrands Agentを呼び出し、分析結果をS3に保存する構成を用意しました。
 
-- **Ordinary Lambda**：今回は比較用に、失敗したら処理全体を再実行する単純な実装にする。
-- **Durable Lambda**：Agent呼び出しとS3保存を別々のStepにし、保存StepだけにRetryを設定する。
+AgentにはAmazon Nova Liteを使用し、Python Toolで取得したEC2の模擬設定を分析させます。実際のEC2 APIは呼び出しません。
 
-ここは誤解しやすい点ですが、通常のLambdaが必ず全体を繰り返すわけではありません。今回は違いを見やすくするため、あえてそのように実装しています。
+![今回の検証構成](/images/agentcore-lambda-durable-retry/00-architecture.png)
+
+処理は次の2段階です。
+
+1. **Agent実行**：AgentCore RuntimeでEC2の模擬設定を分析する
+2. **S3保存**：Agentの分析結果をS3に保存する
+
+S3保存時には、初回だけ**PutObjectの直前に意図的なエラー**を発生させます。実際のS3サービスの障害ではなく、コードによる失敗注入です。
+
+この条件で、以下の2方式を比較します。
+
+| | Ordinary Lambda | Durable Lambda |
+|---|---|---|
+| 処理方法 | 通常の関数処理 | Agent実行とS3保存を別々のStepで実行 |
+| 失敗時 | 処理全体を再試行 | Retryを設定したS3保存Stepのみ再試行 |
+| Agentの再実行 | あり | なし（完了済みStepを再利用） |
+
+※ Ordinary Lambdaは比較のため、処理全体を再試行するように実装しています。通常のLambdaが必ずこの動作になるわけではありません。
+
+## StepとCheckpointによる再実行の違い
+
+![Ordinary LambdaとDurable Lambdaの再試行範囲](/images/agentcore-lambda-durable-retry/00-retry-comparison.png)
+
+Durable Functionsでは、Stepが正常に完了すると、その結果がCheckpointに記録されます。
+
+今回の構成では、Agent実行とS3保存を別々のStepにしています。そのため、S3保存に失敗しても、**Checkpointに記録されたAgentの分析結果を再利用し、S3保存Stepだけを再試行**できます。
+
+ただし、Checkpointが記録される前に失敗した処理や、Agent内部のTool実行まで重複を防げるわけではありません。
+
+この違いを、まずMock Agentで確認し、その後、実際のAgentCore Runtimeを使って検証します。
+
 
 ## 検証環境
 
@@ -190,7 +221,7 @@ Durable側のExecution Historyでは、`invoke_agent` が一度成功したあ�
 | --- | ---: | ---: |
 | Agent呼び出し関数の実行 | **2回** | **1回** |
 | S3保存の試行 | 2回 | 2回 |
-| 最終実行状態 | 保存処理2回目まで到達 | ExecutionSucceeded |
+| 最終実行状態 | 処理完了（2回目の保存で成功） | 処理完了（ExecutionSucceeded） |
 
 ![実AgentCoreでのDynamoDB計数](/images/agentcore-lambda-durable-retry/14-real-call-counts.png)
 
@@ -242,12 +273,14 @@ Tool C のエラーがAgent内部で処理されず、外側の `invoke_agent` S
 
 Agentの処理が長くなったり、Toolが増えたりするほど、**Checkpointの境界をどこに置くか**を最初に考えておく価値がありそうです。
 
+今回の検証が、AI Agentを組み込んだ処理のリトライ設計や、Lambda Durable Functionsの活用を考える際の参考になれば幸いです。
+
 ---
 
 ### 参考資料
 
-- [AWS Lambda durable functions](https://docs.aws.amazon.com/lambda/latest/dg/durable-functions.html)
-- [Retries for Lambda durable functions](https://docs.aws.amazon.com/lambda/latest/dg/durable-execution-sdk-retries.html)
-- [AWS Lambda: Durable functions or Step Functions](https://docs.aws.amazon.com/lambda/latest/dg/concepts-application-design.html)
-- [Bedrock AgentCore IAM actions and resource types](https://docs.aws.amazon.com/service-authorization/latest/reference/list_bedrock-agentcore.html)
+- https://docs.aws.amazon.com/ja_jp/lambda/latest/dg/durable-functions.html
+- https://docs.aws.amazon.com/ja_jp/lambda/latest/dg/durable-execution-sdk-retries.html
+- https://docs.aws.amazon.com/ja_jp/lambda/latest/dg/concepts-application-design.html
+- https://docs.aws.amazon.com/ja_jp/service-authorization/latest/reference/list_amazonbedrockagentcore.html
 
