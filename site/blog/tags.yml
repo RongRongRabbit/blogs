@@ -191,3 +191,18 @@ alarm:
   label: alarm
   permalink: /alarm
   description: alarm tag description
+
+lambda:
+  label: lambda
+  permalink: /lambda
+  description: lambda tag description
+
+agentcore:
+  label: agentcore
+  permalink: /agentcore
+  description: agentcore tag description
+
+serverless:
+  label: serverless
+  permalink: /serverless
+  description: serverless tag description
