@@ -206,3 +206,13 @@ serverless:
   label: serverless
   permalink: /serverless
   description: serverless tag description
+
+dynamodb:
+  label: dynamodb
+  permalink: /dynamodb
+  description: dynamodb tag description
+
+durablefunctions:
+  label: durablefunctions
+  permalink: /durablefunctions
+  description: durablefunctions tag description
