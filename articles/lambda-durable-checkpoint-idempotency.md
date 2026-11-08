@@ -9,6 +9,7 @@ topics:
   - serverless
   - durablefunctions
 published: false
+date: "2026-11-09"
 ---
 
 ## はじめに
