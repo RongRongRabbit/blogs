@@ -8,7 +8,7 @@ topics:
   - dynamodb
   - serverless
   - durablefunctions
-published: false
+published: true
 date: "2026-11-09"
 ---
 
