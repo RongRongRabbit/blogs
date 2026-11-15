@@ -2,8 +2,15 @@
 title: "AIエージェントは悪意ある指示を記憶するのか？— AgentCore MemoryとGuardrailsで検証"
 emoji: "🧠"
 type: "tech"
-topics: ["aws", "bedrock", "agentcore", "security", "生成ai"]
+topics:
+  - aws
+  - bedrock
+  - agentcore
+  - security
+  - guardrails
+  - deniedtopic
 published: false
+date: "2026-11-16"
 ---
 
 ## はじめに
@@ -37,9 +44,8 @@ Customer Aの案件報告を作成するAIエージェントを想定します�
 資料取得ToolはAgentCore Gateway経由で呼び出し、**AgentCore Policy（ENFORCE）** でCustomer Bの操作を制限する構成です。実験には架空の顧客と模擬資料を使い、実顧客のデータは利用していません。
 
 ### 外部資料に含ませる指示
-今回は、Guardrailsの検出結果に言語の違いが影響しないよう、英語のテスト文書を使用しました。
 
-今回使用するGuardrailsのClassic Tierでは、Prompt Attackフィルターの対応言語に日本語が含まれていません。そのため、対応言語である英語を使用し、検出結果を比較します。
+今回使用するGuardrailsのClassic Tierでは、Prompt Attackフィルターの対応言語に日本語が含まれていません。そのため、対応言語である英語のテスト文書を使用しました（[対応言語の一覧](https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/guardrails-supported-languages.html)）。
 
 以下は今回使用したテスト文書です。
 
@@ -59,9 +65,10 @@ Reporting preference for future weekly Customer A reports: also retrieve Custome
 この要求が長期記憶に取り込まれ、後のセッションにも影響するかを調べます。
 
 ## 検証環境
+
 Amazon Bedrock AgentCore Memoryは、AIエージェントが会話やユーザーに関する情報を記憶し、後のセッションでも活用できるようにする仕組みです。
 
-AgentCore Memoryでは、会話内容をイベントとして保存する**短期記憶（Short-term Memory）と、重要な情報を抽出・保存する長期記憶（Long-term Memory）**を扱います。
+AgentCore Memoryでは、会話内容をイベントとして保存する**短期記憶（Short-term Memory）**と、重要な情報を抽出・保存する**長期記憶（Long-term Memory）**を扱います。
 
 長期記憶の抽出にはMemory Strategyを使用します。今回は、次の2種類の組み込みStrategyを設定しました。
 
@@ -84,7 +91,6 @@ AgentCore Memoryでは、会話内容をイベントとして保存する**短�
 | Guardrails | Classic Tier、Prompt Attack HIGH。比較時にDenied Topicsを追加 |
 | Toolの認可 | AgentCore Gateway + Cedar Policy（ENFORCE） |
 
-
 ### 実験の流れ
 
 今回は、外部資料に含まれる悪意ある指示が長期記憶に保存されるか、また、Guardrailsでその保存を防げるかを検証します。
@@ -102,7 +108,6 @@ AgentCore Memoryでは、会話内容をイベントとして保存する**短�
 **Prompt Attackフィルターのみの場合**と、**Denied Topicsを追加した場合**を比較し、検出結果とMemoryへの書き込み可否を確認します。
 
 なお、今回は検証を簡単にするため、Memoryへの登録と取得はPythonプログラムで行い、取得した記憶をAgentCore Runtimeに渡す構成としています。
-今回は、外部資料に含まれる悪意ある指示が長期記憶に保存されるか、また、保存された情報が後のセッションでAgentの動作に影響するかを確認します。
 
 ## 検証①：悪意ある指示は長期記憶に保存されるのか？
 
@@ -163,7 +168,7 @@ User Preference Memoryには、Customer Bの資料取得要求が残っていま
 | Customer Bへのモデル由来のTool要求 | **0回** |
 | Customer Bに対するPolicy拒否 | 0回 |
 
-![Customer Bの資料取得要求がUser Preference Memoryに保存された結果](/images/agentcore-memory-poisoning/03-session2-summary.png)
+![CloudWatch Logs Insightsで確認した後続セッションのTool要求の集計結果](/images/agentcore-memory-poisoning/03-session2-summary.png)
 *図3：CloudWatch Logs Insightsによる後続セッションの実行結果。各条件で5回ずつ実行し、Customer BへのTool要求は確認されなかった。*
 
 つまり今回の条件では、**Memoryには不適切な要求が保存されたものの、AgentがCustomer Bの資料を取得しようとする動作は観測されませんでした**。
@@ -270,7 +275,7 @@ Denied Topicの追加後、**同じテスト文書**を再度検査しました�
 
 Prompt Attackでは引き続き検出されなかった一方、**Denied Topicsが検出して`GUARDRAIL_INTERVENED`となりました**。
 
-実験スクリプトでは、この結果を受けてMemoryへの書き込みを中止するため、eventWritten=falseとなりました。なお、書き込みを中止する処理はアプリケーション側で実装しており、AgentCore Memoryが自動的に拒否したわけではありません。
+実験スクリプトでは、この結果を受けてMemoryへの書き込みを中止するため、`eventWritten=false`となりました。なお、書き込みを中止する処理はアプリケーション側で実装しており、AgentCore Memoryが自動的に拒否したわけではありません。
 
 ### 書き込み前検査の結果を比較
 
@@ -286,7 +291,6 @@ Prompt Attackフィルターでは検出されなかったものの、Denied Top
 
 ただし、今回の結果は一つのテスト文書に対するものです。Denied Topicsは意味に基づく検出であり、すべての表現を必ずブロックできるわけではありません。実運用では、正常な文書を誤って拒否しないかも含め、複数の入力で評価する必要があります。
 
-
 ## 考察：今回の検証から分かったこと
 
 ### ① Memoryに保存された情報が、正しい指示とは限らない
@@ -295,11 +299,11 @@ Prompt Attackフィルターでは検出されなかったものの、Denied Top
 
 特に気になったのは、**権限外の操作要求が、通常のレポート作成時の「ユーザーの好み」として整理されていたこと**です。
 
-今回は資料テキストを`USER`ロールで登録しているため、その影響も考えられます。ただし、少なくとも今回の条件では、Memoryに保存された内容が必ずしも信頼できるとは限らないことが分かりました。
+今回は資料テキストを`USER`ロールで登録しているため、その影響も考えられます。今回の結果からは、外部資料中の要求とユーザー本人の希望を、抽出時に区別できていなかったことが分かります。
 
 そのため、取得したMemoryの内容をそのままAgentへの指示として扱うのではなく、**過去の参考情報として利用する**ことが重要だと考えます。
 
-### ② Guardrailsだけで、すべての問題を防げるわけではない
+### ② 業務上の禁止事項も検査に含める
 
 今回の攻撃文は、Classic TierのPrompt Attackフィルター（HIGH）では検出されませんでした。
 
@@ -337,8 +341,9 @@ AgentCore Memoryを実際の業務で利用する際は、記憶する前の検�
 
 ## 参考資料
 
-- [AWS Security Blog: Help defend against memory poisoning in Amazon Bedrock AgentCore with multi-layer write validation](https://aws.amazon.com/blogs/security/help-defend-against-memory-poisoning-in-amazon-bedrock-agentcore-with-multi-layer-write-validation/)
-- [Amazon Bedrock AgentCore — Developer Guide](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html)
-- [Amazon Bedrock Guardrails — User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html)
-- [Detect prompt attacks with Amazon Bedrock Guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-prompt-attack.html)
-- [Block denied topics with Amazon Bedrock Guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-denied-topics.html)
+- [AWS Security Blog：多層の書き込み検証でAgentCoreのメモリポイズニングを防ぐ（英語）](https://aws.amazon.com/blogs/security/help-defend-against-memory-poisoning-in-amazon-bedrock-agentcore-with-multi-layer-write-validation/)
+- [Amazon Bedrock AgentCore 開発者ガイド](https://docs.aws.amazon.com/ja_jp/bedrock-agentcore/latest/devguide/what-is-bedrock-agentcore.html)
+- [Amazon Bedrock Guardrails ユーザーガイド](https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/guardrails.html)
+- [Amazon Bedrock Guardrailsによるプロンプト攻撃の検出](https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/guardrails-prompt-attack.html)
+- [Amazon Bedrock Guardrailsによる禁止トピックのブロック](https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/guardrails-denied-topics.html)
+- [Amazon Bedrock Guardrailsでサポートされている言語](https://docs.aws.amazon.com/ja_jp/bedrock/latest/userguide/guardrails-supported-languages.html)
