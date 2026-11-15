@@ -8,7 +8,7 @@ topics:
   - agentcore
   - security
   - guardrails
-published: false
+published: true
 date: "2026-11-16"
 ---
 
