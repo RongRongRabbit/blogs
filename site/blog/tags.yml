@@ -216,3 +216,8 @@ durablefunctions:
   label: durablefunctions
   permalink: /durablefunctions
   description: durablefunctions tag description
+
+guardrails:
+  label: guardrails
+  permalink: /guardrails
+  description: guardrails tag description
